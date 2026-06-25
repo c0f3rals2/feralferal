@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connie Feral — AI Avatar & Motion System</title>
+<!-- Fuentes Premium desde Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<!-- Tailwind CSS para utilidades de espaciado y grillas responsivas -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  :root {
+    /* Paleta de colores inspirada en las referencias: lila lo-fi, rosa bunny, lavanda brumosa y destellos perlados */
+    --pastel-bg-solid: #F3EBF9;
+    --pastel-pink: #FFD4EC;
+    --pastel-lilac: #E8D3FC;
+    --pastel-blue: #D6E8FF;
+    --pastel-lavender: #DEC9F5;
+    --text-dark: #20132A;
+    --text-muted: #6B557C;
+    
+    /* Gradientes Iridiscentes y Glaseados */
+    --iridescent-gradient: linear-gradient(135deg, #FFD4EC 0%, #E8D3FC 40%, #D6E8FF 100%);
+    --iridescent-glow: linear-gradient(120deg, #FF7BBF 0%, #B27CFF 35%, #609FFF 70%, #FF7BBF 100%);
+    
+    /* Matte Glassmorphism */
+    --matte-card: rgba(255, 255, 255, 0.28);
+    --matte-border: rgba(255, 255, 255, 0.55);
+  }
+
+  *, *::before, *::after { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+  }
+
+  html { 
+    scroll-behavior: smooth; 
+  }
+
+  body {
+    background-color: var(--pastel-bg-solid);
+    background: linear-gradient(180deg, #FDFBFE 0%, #F5ECFD 35%, #FBEBF4 70%, #EFE1FC 100%);
+    color: var(--text-dark);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- CANVAS INTERACTIVO ULTRA ATRACTIVO ---- */
+  #ambient-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.95;
+  }
+
+  /* Scrollbar estético pastel */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #FDFBFE;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--pastel-pink);
+    border-radius: 999px;
+    border: 2px solid #FDFBFE;
+  }
+
+  /* ---- ANIMACIÓN LIQUID IRIDESCENT PARA TEXTOS ---- */
+  .iridescent-glow-text {
+    background: var(--iridescent-glow);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: flowLiquid 6s linear infinite;
+    text-shadow: 0 0 40px rgba(232, 211, 252, 0.4);
+    display: inline-block;
+  }
+
+  @keyframes flowLiquid {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .glow-soft {
+    text-shadow: 0 0 20px rgba(222, 201, 245, 0.9), 0 0 4px rgba(255, 212, 236, 0.6);
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    padding: 120px 0 40px;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  /* Orbes estáticos de fondo difuminados para dar profundidad de entrada */
+  .blur-orb-1 {
+    position: absolute;
+    width: 550px; height: 550px;
+    background: radial-gradient(circle, rgba(255, 212, 236, 0.5) 0%, transparent 75%);
+    top: -5%; left: -10%;
+    pointer-events: none;
+    filter: blur(60px);
+    z-index: 0;
+  }
+  .blur-orb-2 {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(232, 211, 252, 0.45) 0%, transparent 75%);
+    bottom: 10%; right: -15%;
+    pointer-events: none;
+    filter: blur(80px);
+    z-index: 0;
+  }
+
+  .hero-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Etiquetas estilo píldora con brillo holográfico */
+  .tag-pill {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--text-dark);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    padding: 12px 28px;
+    border-radius: 999px;
+    margin-bottom: 35px;
+    border: 1px solid var(--matte-border);
+    box-shadow: 0 8px 32px rgba(232, 211, 252, 0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .tag-pill::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+    transform: skewX(-25deg);
+    transition: 0.75s;
+  }
+  .tag-pill:hover::before {
+    left: 150%;
+  }
+  .tag-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(232, 211, 252, 0.3);
+    border-color: rgba(255, 255, 255, 0.95);
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(40px, 8vw, 86px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 24px;
+    color: var(--text-dark);
+  }
+
+  .hero h1 span {
+    position: relative;
+    display: inline-block;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--text-muted);
+    display: block;
+    font-size: 0.45em;
+    letter-spacing: 3px;
+    font-weight: 400;
+    font-family: 'Playfair Display', serif;
+    margin-top: 16px;
+    text-transform: lowercase;
+  }
+
+  .hero-sub {
+    max-width: 650px;
+    margin: 12px auto 38px;
+    font-size: clamp(15px, 2.2vw, 18px);
+    line-height: 1.8;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* ---- DISEÑO DE BOTONES PREMIUM CON GRADIENTE ---- */
+  .btn-primary {
+    background: var(--iridescent-gradient);
+    background-size: 200% auto;
+    color: var(--text-dark);
+    padding: 18px 44px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13.5px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--matte-border);
+    border-radius: 30px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 30px rgba(255, 212, 236, 0.5);
+    display: inline-block;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 15px 35px rgba(232, 211, 252, 0.8);
+    background-position: right center;
+  }
+
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.45);
+    color: var(--text-dark);
+    padding: 17px 44px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--matte-border);
+    border-radius: 30px;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 8px 32px rgba(232, 211, 252, 0.08);
+    display: inline-block;
+  }
+
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 194, 227, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(255, 212, 236, 0.35);
+  }
+
+  .strip {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    gap: 18px;
+    overflow: hidden;
+    height: clamp(200px, 28vw, 340px);
+    padding: 20px;
+    max-width: 1200px;
+    margin: 60px auto 0;
+  }
+
+  .strip-img {
+    flex: 1;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 28px;
+    border: 4px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 15px 40px rgba(232, 211, 252, 0.2);
+    transition: flex 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s ease, border-color 0.3s;
+    background: var(--pastel-lilac);
+  }
+
+  .strip-img:hover { 
+    flex: 2.3; 
+    transform: translateY(-10px) rotate(1deg);
+    border-color: #FFAAD6;
+    box-shadow: 0 25px 50px rgba(255, 170, 214, 0.4);
+  }
+
+  /* ---- MARQUEE DESLIZANTE ---- */
+  .marquee-wrap {
+    background: rgba(255, 255, 255, 0.55);
+    border-top: 1px solid var(--matte-border);
+    border-bottom: 1px solid var(--matte-border);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    overflow: hidden;
+    padding: 20px 0;
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 4px 30px rgba(232, 211, 252, 0.08);
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 0;
+    animation: marqueeScroll 34s linear infinite;
+    width: max-content;
+  }
+
+  .marquee-item {
+    font-family: 'Syne', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    color: var(--text-dark);
+    padding: 0 32px;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  .marquee-item span { 
+    background: var(--iridescent-glow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-right: 10px; 
+    font-weight: 800;
+  }
+
+  @keyframes marqueeScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ---- SECCIONES ---- */
+  section {
+    position: relative;
+    z-index: 10;
+    padding: 120px 24px;
+    max-width: 1140px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(34px, 5vw, 66px);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 50px;
+    color: var(--text-dark);
+  }
+
+  h2 em {
+    font-style: italic;
+    font-weight: 400;
+    background: var(--iridescent-glow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+    perspective: 1000px;
+  }
+
+  /* Estructura base de tarjetas interactivas */
+  .interactive-card {
+    background: var(--matte-card);
+    border: 1px solid var(--matte-border);
+    border-radius: 32px;
+    padding: 44px 36px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    transition: border-color 0.3s, box-shadow 0.4s, transform 0.1s ease-out;
+    box-shadow: 0 10px 40px rgba(232, 211, 252, 0.08);
+    transform-style: preserve-3d;
+  }
+
+  .interactive-card:hover {
+    border-color: rgba(255, 170, 214, 0.7);
+    box-shadow: 0 20px 50px rgba(255, 170, 214, 0.22);
+  }
+
+  /* Destello de luz interna que pasa por la tarjeta (Glare) */
+  .interactive-card::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    mix-blend-mode: overlay;
+    z-index: 1;
+  }
+
+  .interactive-card:hover::after {
+    opacity: 1;
+  }
+
+  .feature-icon { 
+    font-size: 38px; 
+    margin-bottom: 24px; 
+    display: inline-block; 
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 50%;
+    padding: 14px;
+    box-shadow: 0 8px 24px rgba(232, 211, 252, 0.08);
+    border: 1px solid var(--matte-border);
+    transition: transform 0.4s;
+  }
+
+  .interactive-card:hover .feature-icon {
+    transform: scale(1.1) rotate(-8deg);
+  }
+  
+  .feature h3 { 
+    font-family: 'Syne', sans-serif;
+    font-size: 21px; 
+    font-weight: 700;
+    margin-bottom: 14px; 
+    color: var(--text-dark);
+  }
+  
+  .feature p { 
+    font-size: 14px; 
+    color: var(--text-muted); 
+    line-height: 1.8; 
+    font-weight: 400; 
+  }
+
+  /* ---- SECCIÓN PRUEBAS SOCIALES CON CONTADORES ---- */
+  .proof { 
+    text-align: center; 
+    padding: 90px 24px; 
+    border-top: 1px solid var(--matte-border); 
+    border-bottom: 1px solid var(--matte-border);
+    position: relative;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  
+  .proof-grid { 
+    display: flex; 
+    justify-content: center; 
+    gap: clamp(40px, 8vw, 130px); 
+    flex-wrap: wrap; 
+    max-width: 960px; 
+    margin: 0 auto; 
+  }
+  
+  .proof-number { 
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 8vw, 86px); 
+    font-weight: 800;
+    font-style: italic;
+    background: var(--iridescent-glow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 4px 15px rgba(255, 123, 191, 0.15));
+    animation: pulseGlow 4s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulseGlow {
+    0% { filter: drop-shadow(0 2px 5px rgba(255, 123, 191, 0.1)); }
+    100% { filter: drop-shadow(0 10px 25px rgba(178, 124, 255, 0.45)); }
+  }
+  
+  .proof-label { 
+    font-family: 'Space Mono', monospace;
+    font-size: 11.5px; 
+    color: var(--text-dark); 
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    margin-top: 12px; 
+    text-transform: uppercase;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 26px;
+    margin-top: 40px;
+    counter-reset: steps;
+  }
+
+  .step { 
+    padding: 44px 34px; 
+    background: rgba(255, 255, 255, 0.5); 
+    border: 1px solid var(--matte-border);
+    border-radius: 28px;
+    counter-increment: steps; 
+    position: relative; 
+    transition: all 0.35s ease;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .step:hover {
+    border-color: #FFAAD6;
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-6px);
+    box-shadow: 0 15px 30px rgba(255, 170, 214, 0.15);
+  }
+  
+  .step::before {
+    content: counter(steps, decimal-leading-zero);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    background: var(--iridescent-glow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    display: block;
+    margin-bottom: 24px;
+  }
+  
+  .step h3 { 
+    font-family: 'Syne', sans-serif; 
+    font-size: 19px; 
+    font-weight: 700; 
+    margin-bottom: 12px; 
+    color: var(--text-dark);
+  }
+  
+  .step p { 
+    font-size: 13.5px; 
+    color: var(--text-muted); 
+    line-height: 1.7; 
+    font-weight: 400; 
+  }
+
+  /* ---- SECCIÓN DE PRECIOS MATTE ---- */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 55px;
+  }
+
+  .plan {
+    background: var(--matte-card);
+    border: 1px solid var(--matte-border);
+    border-radius: 36px;
+    padding: 54px 38px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    box-shadow: 0 10px 40px rgba(232, 211, 252, 0.08);
+    transition: border-color 0.3s, box-shadow 0.4s, transform 0.1s ease-out;
+    transform-style: preserve-3d;
+  }
+
+  .plan:hover { 
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 25px 50px rgba(232, 211, 252, 0.35);
+  }
+
+  /* Tarjeta Destacada */
+  .plan.featured { 
+    border: 2px solid #FFAAD6;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 20px 45px rgba(255, 170, 214, 0.25); 
+  }
+
+  .plan.featured::before {
+    content: 'LA FÓRMULA DE DISEÑO';
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--iridescent-gradient);
+    color: var(--text-dark);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    padding: 6px 20px;
+    border-radius: 30px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 5px 20px rgba(255, 170, 214, 0.4);
+  }
+
+  /* Ghost Tier Secreto */
+  .plan.ghost-tier {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(253, 232, 243, 0.45) 100%);
+    border: 1.5px dashed #FFAAD6;
+    opacity: 0.95;
+  }
+
+  .plan.ghost-tier:hover {
+    border-style: solid;
+    border-color: #FFAAD6;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(253, 232, 243, 0.6) 100%);
+  }
+
+  .plan.ghost-tier .ghost-badge {
+    position: absolute;
+    top: 18px; right: 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  /* ---- ESTILO MELI (VIOLETA MATE CON TEXTURA CORDEROY Y EFECTO DE SEDA) ---- */
+  .plan.meli-style {
+    position: relative;
+    /* Púrpura mate de fondo con efecto satinado diagonal (Seda) y líneas finas verticales (Corderoy) */
+    background: 
+      linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.0) 50%, rgba(255, 255, 255, 0.08) 100%), /* Reflejo Seda */
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 2px, transparent 2.5px, transparent 7px), /* Textura Corderoy */
+      radial-gradient(circle at 50% 30%, #58249C 0%, #290E4F 100%); /* Púrpura mate base */
+    border: 2px solid rgba(220, 180, 255, 0.5);
+    box-shadow: 0 15px 45px rgba(88, 36, 156, 0.35);
+    color: #F8F3FC;
+    transform-style: preserve-3d;
+  }
+
+  .plan.meli-style:hover {
+    border-color: #FFAAD6;
+    box-shadow: 0 25px 60px rgba(138, 79, 186, 0.55);
+  }
+
+  .plan.meli-style .plan-name {
+    color: #FFD4EC !important;
+    text-shadow: 0 0 12px rgba(255, 212, 236, 0.5);
+  }
+
+  .plan.meli-style .plan-price {
+    color: #FFFFFF !important;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+    font-size: 42px;
+    letter-spacing: -0.5px;
+  }
+
+  .plan.meli-style .plan-desc {
+    color: #DEC9F5 !important;
+  }
+
+  .plan.meli-style .plan-features li {
+    color: #F3EBF9 !important;
+  }
+
+  .plan.meli-style .plan-features li::before {
+    content: '🎀' !important;
+  }
+
+  .plan-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    color: var(--text-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+
+  .plan-price { 
+    font-family: 'Playfair Display', serif;
+    font-size: 64px; 
+    font-weight: 800;
+    color: var(--text-dark);
+    line-height: 1; 
+    margin-bottom: 18px; 
+  }
+  
+  .plan.featured .plan-price {
+    background: var(--iridescent-glow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .plan-price sup { 
+    font-size: 24px; 
+    vertical-align: super; 
+    font-weight: 400; 
+    font-family: 'Playfair Display', serif; 
+    margin-right: 4px; 
+  }
+  
+  .plan-desc { 
+    font-size: 14px; 
+    color: var(--text-muted); 
+    margin-bottom: 38px; 
+    font-weight: 400; 
+    line-height: 1.6; 
+  }
+
+  .plan-features {
+    list-style: none;
+    margin-bottom: 44px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .plan-features li { 
+    font-size: 14px; 
+    color: var(--text-dark); 
+    display: flex; 
+    align-items: flex-start; 
+    gap: 12px; 
+    font-weight: 400; 
+    line-height: 1.5;
+  }
+  .plan-features li::before { 
+    content: '🐾'; 
+    font-size: 12px; 
+    flex-shrink: 0; 
+  }
+  .plan.featured .plan-features li::before { 
+    content: '✨'; 
+  }
+  .plan.ghost-tier .plan-features li::before { 
+    content: '🎀'; 
+  }
+
+  .plan .btn-primary, .plan .btn-ghost { 
+    width: 100%; 
+    text-align: center; 
+    border-radius: 20px;
+    font-size: 13.5px;
+    padding: 16px;
+  }
+
+  .alt-payment-text {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .alt-payment-text:hover {
+    color: var(--text-dark);
+  }
+
+  /* ---- FINAL CTA ---- */
+  .final-cta { 
+    text-align: center; 
+    padding: 140px 24px; 
+    position: relative; 
+    overflow: hidden; 
+    z-index: 10; 
+  }
+  .final-cta::before {
+    content: 'FERAL';
+    position: absolute;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(100px, 25vw, 240px);
+    font-weight: 900;
+    font-style: italic;
+    color: rgba(232, 211, 252, 0.12);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+  .final-cta h2 { 
+    font-family: 'Playfair Display', serif; 
+    font-size: clamp(32px, 6vw, 60px); 
+    margin-bottom: 24px; 
+  }
+  .final-cta p { 
+    color: var(--text-muted); 
+    margin-bottom: 40px; 
+    font-size: 16px; 
+    font-weight: 300; 
+    max-width: 600px; 
+    margin-left: auto; 
+    margin-right: auto; 
+  }
+
+  /* ---- PIE DE PÁGINA ---- */
+  footer {
+    position: relative;
+    z-index: 10;
+    border-top: 1px solid var(--matte-border);
+    padding: 48px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    max-width: 1140px;
+    margin: 0 auto;
+    background: transparent;
+  }
+  footer p { 
+    font-family: 'Space Mono', monospace; 
+    font-size: 12px; 
+    color: var(--text-muted); 
+    letter-spacing: 1px; 
+  }
+  footer a { 
+    color: var(--text-dark); 
+    text-decoration: none; 
+    font-family: 'Space Mono', monospace; 
+    font-size: 12px; 
+    letter-spacing: 1px; 
+    transition: all 0.2s; 
+    font-weight: bold; 
+  }
+  footer a:hover { 
+    background: var(--iridescent-glow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ---- REVELADO PROGRESIVO DE COMPONENTES ---- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 600px) {
+    .strip { height: auto; flex-direction: column; gap: 16px; }
+    .strip-img { height: 200px; }
+    .strip-img:hover { flex: none; transform: scale(1.02); }
+    footer { flex-direction: column; text-align: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { 
+    * { transition: none !important; } 
+  }
+</style>
+</head>
+<body>
+
+<!-- CANVAS INTERACTIVO PARA LAS AURORAS LIQUIDAS Y DESTELLOS DE CURSOR -->
+<canvas id="ambient-canvas"></canvas>
+
+<!-- HERO SECTION -->
+<section class="hero" style="padding:0; max-width:100%;">
+  <div class="blur-orb-1"></div>
+  <div class="blur-orb-2"></div>
+  
+  <div class="hero-content">
+    <span class="tag-pill">✦ ACCESO COMPLETO AL WORKFLOW DE GENERACION FREE ✦</span>
+    <h1>Diseñá tu propio<span class="iridescent-glow-text">.</span>avatar<em class="glow-soft">para redes</em></h1>
+    <p class="hero-sub">
+Este drop digital incluye todo lo que necesitás para dominar tus renders: guías paso a paso para fijar facciones sin errores, prompts optimizados para texturas de piel y las herramientas en vivo para hacer gesticular a tu personaje. Todo empaquetado de forma limpia y prolija para que crees tu clon digital favorito apenas lo descargues.    </p>
+    <div class="hero-cta">
+      <a href="#pricing" class="btn-primary">CONSEGUIR MI PACK →</a>
+      <a href="#how" class="btn-ghost">EL MÉTODO</a>
+    </div>
+  </div>
+
+  <!-- Carrete de imágenes de Connie Feral originales de GitHub -->
+  <div class="strip">
+    <img class="strip-img" src="CFOTO1.png" alt="Connie Feral 1">
+    <img class="strip-img" src="CFOTO2.png" alt="Connie Feral 2">
+    <img class="strip-img" src="CFOTO3.png" alt="Connie Feral 3">
+    <img class="strip-img" src="CFOTO4.png" alt="Connie Feral 4">
+  </div>
+</section>
+
+<!-- MARQUEE INFINITA DESLIZANTE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee-track"></div>
+</div>
+
+<!-- VALUE PROPOSITION (VALOR) -->
+<section class="reveal">
+  <p class="section-label">arquitectura estética</p>
+  <h2>La fórmula de la<br><em class="iridescent-glow-text">atracción virtual</em></h2>
+
+  <div class="features">
+    <div class="feature interactive-card">
+      <span class="feature-icon">🌶️</span>
+      <h3>Estética & Rasgos Realistas</h3>
+      <p>Librerías exclusivas para estructurar facciones sumamente magnéticas, miradas expresivas de gran impacto, simetría perfecta y acabados ultra detallados.</p>
+    </div>
+    <div class="feature interactive-card">
+      <span class="feature-icon">📱</span>
+      <h3>Consistencia en Redes</h3>
+      <p>Sistemas lógicos para clonar facciones en cualquier posición, pose o iluminación. Generá sets completos de contenido comercial e intuitivo impecables.</p>
+    </div>
+    <div class="feature interactive-card">
+      <span class="feature-icon">🎬</span>
+      <h3>Generación de Video</h3>
+      <p>Configuraciones y accesos preferenciales a los mejores renderizadores de video sin costo. Creá clips hiperrealistas fluidos listos para monetizar.</p>
+    </div>
+    <div class="feature interactive-card">
+      <span class="feature-icon">⛓️</span>
+      <h3>Motion Control Gratis</h3>
+      <p>Sistemas y controladores faciales libres para vincular tus expresiones corporales y gesticulaciones con el rostro de tu avatar de forma instantánea.</p>
+    </div>
+  </div>
+</section>
+
+<!-- COUNTERS / PROOF -->
+<div class="proof" style="max-width:100%;">
+  <div class="proof-grid">
+    <div><div class="proof-number">100%</div><div class="proof-label">SENSACIÓN NATURAL</div></div>
+    <div><div class="proof-number">VIP</div><div class="proof-label">PROMPTS SIN LÍMITES</div></div>
+    <div><div class="proof-number">FREE</div><div class="proof-label">VIDEO & MOTION CONTROL</div></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="reveal">
+  <p class="section-label">el método</p>
+  <h2>Desarrollo de<br><em class="iridescent-glow-text">presencia digital</em></h2>
+
+  <div class="steps">
+    <div class="step"><h3>Fascinación</h3><p>Elegís el nivel de fidelidad técnica y profundidad visual que querés incorporar.</p></div>
+    <div class="step"><h3>Transacción</h3><p>Adquirís el pack a través de PayPal como opción principal o Mercado Pago.</p></div>
+    <div class="step"><h3>Materialización</h3><p>Implementás la librería de prompts para dar forma a un avatar único con tu propia identidad letal.</p></div>
+    <div class="step"><h3>Animación</h3><p>Sincronizás tus gestos físicos con el personaje usando los controladores de video gratis.</p></div>
+  </div>
+</section>
+
+<!-- PRICING PLANS -->
+<section id="pricing" style="max-width:100%; padding-left:24px; padding-right:24px;" class="reveal">
+  <div style="max-width:1150px; margin:0 auto;">
+    <p class="section-label">acceso inmediato</p>
+    <h2 style="text-align: center; margin-bottom: 12px;">Elegí tu <em class="iridescent-glow-text">pack</em></h2>
+
+    <div class="pricing-grid">
+
+      <!-- TIER 1: BASICO -->
+      <div class="plan">
+        <p class="plan-name">Guía de Animación</p>
+        <div class="plan-price"><sup>$</sup>5</div>
+        <p class="plan-desc">Tutoriales avanzados paso a paso y trucos de animación fluida para video gratuito y prompts de movimiento.</p>
+        <ul class="plan-features">
+          <li>Tutorial paso a paso para renderizar video gratis</li>
+          <li>Atajos y prompts exclusivos de movimiento dinámico</li>
+          <li>Acceso a herramientas y motores de video sin costo</li>
+          <li>Trucos de fluidez gestual y efectos de cámara estáticos</li>
+        </ul>
+        <a href="https://cfs2.gumroad.com/l/guia-animacion" target="_blank" class="btn-ghost" style="border-color: #FFAAD6;">CONSEGUIR EN GUMROAD</a>
+        <a href="https://mpago.la/32RJV1r" target="_blank" class="alt-payment-text">o pagar con Mercado Pago</a>
+      </div>
+
+      <!-- TIER 2: MEDIO (FEATURED) -->
+      <div class="plan featured">
+        <p class="plan-name">Motor de Avatar AI</p>
+        <div class="plan-price"><sup>$</sup>19</div>
+        <p class="plan-desc">Pack completo de modelado de avatar y consistencia para redes, anuncios y contenido publicitario.</p>
+        <ul class="plan-features">
+          <li>Todo lo incluido en la Guía de Animación</li>
+          <li>Pack completo de modelado de avatares AI desde cero</li>
+          <li>Prompts avanzados para facciones alternativas avanzadas</li>
+          <li>Ajustes de iluminación suave y texturas de piel realistas</li>
+          <li>Fórmula de consistencia facial en múltiples ángulos</li>
+        </ul>
+        <a href="https://cfs2.gumroad.com/l/motor-avatar" target="_blank" class="btn-primary">CONSEGUIR EN GUMROAD ✦</a>
+        <a href="https://mpago.la/2SEE8KD" target="_blank" class="alt-payment-text">o pagar con Mercado Pago</a>
+      </div>
+
+      <!-- TIER 3: VIP -->
+      <div class="plan">
+        <p class="plan-name">Full Suite Virtual</p>
+        <div class="plan-price"><sup>$</sup>29</div>
+        <p class="plan-desc">Acceso ilimitado para tracking facial en vivo, doblaje de audio labial AI y prompts de fotografía premium.</p>
+        <ul class="plan-features">
+          <li>Todo lo incluido en el Motor de Avatar AI</li>
+          <li>Configuración de Motion Control gratis (tracking facial en vivo)</li>
+          <li>Prompts fotográficos avanzados sin límites para contenido en redes</li>
+          <li>Workflow de sincronización de voz y doblaje labial AI</li>
+          <li>Actualizaciones prioritarias de librerías estéticas</li>
+        </ul>
+        <a href="https://cfs2.gumroad.com/l/full-suite" target="_blank" class="btn-primary" style="background: var(--iridescent-gradient);">CONSEGUIR EN GUMROAD ✦</a>
+        <a href="https://mpago.la/2XDkhnp" target="_blank" class="alt-payment-text">o pagar con Mercado Pago</a>
+      </div>
+
+      <!-- TIER MELI: TEXTURA CORDEROY Y SEDA EN VIOLETA Y PURPURA MATE -->
+      <div class="plan meli-style">
+        <p class="plan-name">Ejemplo Meli</p>
+        <div class="plan-price">Demo</div>
+        <p class="plan-desc">Avatar creado en AI pack de imagenes de ejemplo. Explora antes de iniciar tu drop.</p>
+        <ul class="plan-features">
+          <li>Avatar creado en AI</li>
+          <li>Pack de imágenes de ejemplo</li>
+          <li>Fidelidad técnica extrema</li>
+          <li>Facciones definidas</li>
+        </ul>
+        <a href="https://instagram.com/connieferal.s2" target="_blank" class="btn-primary" style="background: linear-gradient(135deg, #dec9f5 0%, #ffd4ec 100%); color: var(--text-dark); border: none; box-shadow: 0 10px 25px rgba(255, 212, 236, 0.4);">DM EN @CONNIEFERAL.S2 🎀</a>
+      </div>
+
+      <!-- TIER GHOST: EXTENSIÓN SECRETA (Venta rápida) -->
+      <div class="plan ghost-tier">
+        <span class="ghost-badge">// UNRESTRICTED SYSTEM</span>
+        <p class="plan-name">Generación Sin Filtros</p>
+        <div class="plan-price"><sup>$</sup>5</div>
+        <p class="plan-desc">Módulos avanzados y trucos de evasión lógica para renderizar imágenes y videos artísticos fluidos sin restricciones (NSFW Bypass System).</p>
+        <ul class="plan-features">
+          <li>Librería de prompts estéticos de anatomía sin censura técnica</li>
+          <li>Parámetros de bypass para renderizadores de video externos</li>
+          <li>Configuraciones de texturas y pliegues de piel hiperrealistas</li>
+          <li>Desbloqueo de palabras clave para prompts hiper-explícitos</li>
+        </ul>
+        <a href="https://cfs2.gumroad.com/l/full-suite" target="_blank" class="btn-ghost">CONSEGUIR EN GUMROAD</a>
+        <a href="https://mpago.la/32RJV1r" target="_blank" class="alt-payment-text">o pagar con Mercado Pago</a>
+      </div>
+
+    </div>
+
+    <p style="text-align:center; margin-top:36px; font-size:13px; color:var(--text-muted); font-family:'Space Mono', monospace;">
+      Pagos procesados de forma segura mediante Gumroad y Mercado Pago. <a href="https://instagram.com/connieferal.s2" target="_blank" style="color:var(--text-dark); text-decoration:none; font-weight: bold;">@connieferal.s2</a>
+    </p>
+  </div>
+</section>
+
+<!-- FINAL CALL TO ACTION -->
+<div class="final-cta reveal">
+  <h2>Domina la presencia virtual</h2>
+  <p>Creá un avatar único con tus ideas, dominá sus movimientos faciales y generá video ilimitado.</p>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>MADE WITH AI WORKFLOW · 2026 · <a href="https://instagram.com/connieferal.s2" target="_blank">@connieferal.s2</a></p>
+</footer>
+
+<script>
+// --- CANVAS INTERACTIVO AVANZADO CON AURORAS FLUIDAS Y DESTELLOS ---
+const canvas = document.getElementById('ambient-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+let sparkles = [];
+let blobs = [];
+let mouse = { x: null, y: null, active: false };
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Detectar movimiento del ratón
+window.addEventListener('mousemove', function(e) {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  mouse.active = true;
+
+  // Generar estela mágica de purpurina lofi (estrellitas y corazones)
+  if (Math.random() < 0.35) {
+    sparkles.push(createSparkle(mouse.x, mouse.y));
+  }
+});
+
+window.addEventListener('mouseleave', function() {
+  mouse.active = false;
+});
+
+// Soporte táctil móvil para la magia interactiva
+window.addEventListener('touchmove', function(e) {
+  if (e.touches.length > 0) {
+    mouse.x = e.touches[0].clientX;
+    mouse.y = e.touches[0].clientY;
+    mouse.active = true;
+    if (Math.random() < 0.35) {
+      sparkles.push(createSparkle(mouse.x, mouse.y));
+    }
+  }
+});
+
+// Inicializar un brillo de purpurina
+function createSparkle(x, y) {
+  const types = ['sparkle-star', 'cute-heart', 'sparkle-circle'];
+  return {
+    x: x,
+    y: y,
+    size: 4 + Math.random() * 10,
+    vx: (Math.random() - 0.5) * 2,
+    vy: (Math.random() - 0.5) * 2 - 1, // Flotan hacia arriba ligeramente
+    alpha: 1,
+    fadeSpeed: 0.015 + Math.random() * 0.02,
+    color: Math.random() > 0.5 ? '#FFAAD6' : '#DEC9F5', // Rosa suave o lila
+    type: types[Math.floor(Math.random() * types.length)],
+    rotation: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.1
+  };
+}
+
+// Inicializar orbes de luz dinámicos (Auroras fluidas interactivas en el fondo)
+class AuroraBlob {
+  constructor(color, radius) {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.targetX = this.x;
+    this.targetY = this.y;
+    this.radius = radius;
+    this.baseRadius = radius;
+    this.color = color;
+    this.speed = 0.005 + Math.random() * 0.008;
+    this.angle = Math.random() * Math.PI * 2;
+    this.angleSpeed = 0.002 + Math.random() * 0.003;
+    this.amplitude = 50 + Math.random() * 100;
+  }
+
+  update() {
+    // Patrón de oscilación sinusoidal orgánico para que se muevan de manera líquida
+    this.angle += this.angleSpeed;
+    this.targetX += Math.cos(this.angle) * 0.6;
+    this.targetY += Math.sin(this.angle) * 0.6;
+
+    // Si el mouse está activo, las auroras sufren atracción o repulsión elástica muy suave
+    if (mouse.active) {
+      let dx = mouse.x - this.x;
+      let dy = mouse.y - this.y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 400) {
+        // Empujar las auroras suavemente
+        this.targetX -= (dx / dist) * 2;
+        this.targetY -= (dy / dist) * 2;
+        this.radius = this.baseRadius * (1 + (400 - dist) / 1000); // Se inflan sutilmente con la cercanía
+      } else {
+        this.radius += (this.baseRadius - this.radius) * 0.1;
+      }
+    } else {
+      this.radius += (this.baseRadius - this.radius) * 0.1;
+    }
+
+    // Interpolación elástica suave para movimiento fluido
+    this.x += (this.targetX - this.x) * this.speed;
+    this.y += (this.targetY - this.y) * this.speed;
+
+    // Rebotes contra los límites
+    if (this.x < -this.radius) this.targetX = W + this.radius;
+    if (this.x > W + this.radius) this.targetX = -this.radius;
+    if (this.y < -this.radius) this.targetY = H + this.radius;
+    if (this.y > H + this.radius) this.targetY = -this.radius;
+  }
+
+  draw() {
+    ctx.save();
+    let grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+    grad.addColorStop(0, this.color);
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = grad;
+    ctx.globalCompositeOperation = 'multiply'; // El color se funde suavemente con el fondo
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// Inicializar 4 auroras pastel gigantes para el fondo líquido
+blobs.push(new AuroraBlob('rgba(255, 212, 236, 0.42)', 350)); // Orbe rosa
+blobs.push(new AuroraBlob('rgba(232, 211, 252, 0.38)', 400)); // Orbe lila
+blobs.push(new AuroraBlob('rgba(214, 232, 255, 0.35)', 320)); // Orbe celeste
+blobs.push(new AuroraBlob('rgba(240, 201, 245, 0.3)', 380));  // Orbe lila profundo
+
+// --- DIBUJANTES DE GEOMETRÍAS EXPRESIVAS LO-FI ---
+function drawRetroStar(x, y, size) {
+  ctx.beginPath();
+  ctx.moveTo(x, y - size);
+  ctx.quadraticCurveTo(x, y, x + size, y);
+  ctx.quadraticCurveTo(x, y, x, y + size);
+  ctx.quadraticCurveTo(x, y, x - size, y);
+  ctx.quadraticCurveTo(x, y, x, y - size);
+  ctx.closePath();
+}
+
+function drawSparkleHeart(x, y, size) {
+  ctx.beginPath();
+  ctx.moveTo(x, y + size / 4);
+  ctx.quadraticCurveTo(x, y, x + size / 2, y);
+  ctx.quadraticCurveTo(x + size, y, x + size, y + size / 3);
+  ctx.quadraticCurveTo(x + size, y + (size * 2) / 3, x + size / 2, y + size);
+  ctx.quadraticCurveTo(x, y + (size * 2) / 3, x, y + size / 3);
+  ctx.quadraticCurveTo(x, y, x, y + size / 4);
+  ctx.closePath();
+}
+
+// Bucle principal de renderizado (Canvas animado)
+function loop() {
+  ctx.clearRect(0, 0, W, H);
+
+  // 1. Dibujar Auroras de Fondo Líquidas
+  blobs.forEach(b => {
+    b.update();
+    b.draw();
+  });
+
+  // 2. Procesar y Dibujar Brillos del Cursor
+  for (let i = sparkles.length - 1; i >= 0; i--) {
+    let p = sparkles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.alpha -= p.fadeSpeed;
+    p.rotation += p.rotSpeed;
+
+    if (p.alpha <= 0) {
+      sparkles.splice(i, 1);
+      continue;
+    }
+
+    ctx.save();
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle = p.color;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rotation);
+
+    if (p.type === 'sparkle-star') {
+      drawRetroStar(0, 0, p.size);
+      ctx.fill();
+    } else if (p.type === 'cute-heart') {
+      drawSparkleHeart(-p.size/2, -p.size/2, p.size);
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, 0, p.size * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  requestAnimationFrame(loop);
+}
+
+// Inicializar el canvas una vez cargado el documento
+window.onload = function () {
+  loop();
+}
+
+// --- EFECTO 3D TILT INTEGRADO EN LAS TARJETAS ---
+const cards3D = document.querySelectorAll('.interactive-card, .plan');
+cards3D.forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left; // Posición X del ratón en la tarjeta
+    const y = e.clientY - rect.top;  // Posición Y del ratón en la tarjeta
+    
+    // Calcular inclinación (-10 a 10 grados)
+    const rotateX = -((y - rect.height / 2) / (rect.height / 2)) * 10;
+    const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 10;
+
+    // Aplicar transformaciones 3D
+    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
+    
+    // Mover el destello interno (Glare)
+    const glareX = (x / rect.width) * 100;
+    const glareY = (y / rect.height) * 100;
+    card.style.setProperty('--glare-x', `${glareX}%`);
+    card.style.setProperty('--glare-y', `${glareY}%`);
+    
+    // Aplicar dinámicamente un gradiente que siga al mouse como efecto satinado místico (evitando sobre-brillo en meli-style)
+    if (!card.classList.contains('meli-style')) {
+      card.style.backgroundImage = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.2) 60%, rgba(243, 235, 249, 0.25) 100%)`;
+    } else {
+      // Para la tarjeta de meli-style, aplicamos un satinado más suave para preservar la textura de corderoy violeta
+      card.style.backgroundImage = `
+        linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.0) 50%, rgba(255, 255, 255, 0.08) 100%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 2px, transparent 2.5px, transparent 7px),
+        radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255, 255, 255, 0.15) 0%, #58249C 60%, #290E4F 100%)`;
+    }
+  });
+
+  card.addEventListener('mouseleave', () => {
+    // Retornar a la normalidad de forma suave
+    card.style.transform = 'rotateX(0deg) rotateY(0deg) translateY(0px)';
+    if (!card.classList.contains('meli-style')) {
+      card.style.backgroundImage = '';
+    } else {
+      card.style.backgroundImage = `
+        linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.0) 50%, rgba(255, 255, 255, 0.08) 100%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 2px, transparent 2.5px, transparent 7px),
+        radial-gradient(circle at 50% 30%, #58249C 0%, #290E4F 100%)`;
+    }
+  });
+});
+
+// --- CARGA DE TEXTO EN MARQUESINA ---
+const items = ['DISEÑÁ TU PROPIO AVATAR AI','PACK DE CREACIÓN','SYSTEM PROMPTS','FREE MOTION CONTROL','GENERACIÓN DE VIDEO GRATIS','ESTÉTICA ALTERNATIVA GLAM','DNA DE CREADOR','BECOME FERAL','🐾','🎀','✦'];
+const track = document.getElementById('marquee-track');
+[...items, ...items, ...items].forEach(t => {
+  const el = document.createElement('span');
+  el.className = 'marquee-item';
+  el.innerHTML = `<span>✦</span> ${t} `;
+  track.appendChild(el);
+});
+
+// --- REVELADO PROGRESIVO DE SECCIONES CON SCROLL ---
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
