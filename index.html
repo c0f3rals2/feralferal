@@ -1,10 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>Connie Feral — AI Avatar & Clone System</title>
+<title>Connie Feral — AI Avatar & Motion System</title>
 <!-- Fuentes Premium desde Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <!-- Tailwind CSS para utilidades de espaciado y grillas responsivas -->
@@ -331,7 +330,7 @@
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
-    padding: 30px 20px;
+    padding: 40px 20px;
     max-width: 100%;
     margin: 40px auto 0;
   }
@@ -350,45 +349,45 @@
       overflow-x: hidden;
       scroll-snap-type: none;
       gap: 32px;
-      padding: 40px;
+      padding: 50px;
       max-width: 1200px;
       margin: 60px auto 0;
     }
   }
 
   .strip-img {
-    /* Imágenes mucho más grandes para lucir el producto */
-    flex: 0 0 clamp(170px, 38vw, 240px);
-    width: clamp(170px, 38vw, 240px);
-    height: clamp(170px, 38vw, 240px);
+    /* Fotos súper gigantes para que se luzcan completas */
+    flex: 0 0 clamp(240px, 50vw, 320px);
+    width: clamp(240px, 50vw, 320px);
+    height: clamp(240px, 50vw, 320px);
     aspect-ratio: 1/1;
     scroll-snap-align: center;
     object-fit: cover;
-    object-position: center top;
-    border-radius: 50%; /* Formato circular perfecto */
+    object-position: center center; /* Centrado perfecto */
+    border-radius: 50%; /* Formato circular impecable */
     /* Luces LED Violeta de Neón Intensas con doble sombreado pulsante */
-    border: 4px solid #E2C5FF;
+    border: 5px solid #F3E5FF;
     box-shadow: 
-      0 0 20px rgba(186, 104, 200, 0.8), 
-      0 0 40px rgba(186, 104, 200, 0.4), 
-      inset 0 0 15px rgba(186, 104, 200, 0.5);
+      0 0 25px rgba(186, 104, 200, 0.9), 
+      0 0 50px rgba(186, 104, 200, 0.5), 
+      inset 0 0 20px rgba(186, 104, 200, 0.6);
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.3s;
     background: var(--pastel-lilac);
-    animation: pulseLed 4s infinite alternate;
+    animation: pulseLed 3.5s infinite alternate;
   }
 
   @keyframes pulseLed {
     0% {
       box-shadow: 
-        0 0 15px rgba(186, 104, 200, 0.7), 
-        0 0 30px rgba(186, 104, 200, 0.3), 
-        inset 0 0 10px rgba(186, 104, 200, 0.4);
+        0 0 20px rgba(186, 104, 200, 0.8), 
+        0 0 40px rgba(186, 104, 200, 0.4), 
+        inset 0 0 15px rgba(186, 104, 200, 0.5);
     }
     100% {
       box-shadow: 
-        0 0 25px rgba(224, 145, 250, 0.95), 
-        0 0 50px rgba(186, 104, 200, 0.6), 
-        inset 0 0 20px rgba(224, 145, 250, 0.6);
+        0 0 35px rgba(224, 145, 250, 1), 
+        0 0 70px rgba(186, 104, 200, 0.7), 
+        inset 0 0 25px rgba(224, 145, 250, 0.7);
     }
   }
 
@@ -397,12 +396,12 @@
       scroll-snap-align: none;
     }
     .strip-img:hover { 
-      transform: translateY(-10px) scale(1.12) rotate(3deg);
+      transform: translateY(-12px) scale(1.08) rotate(2deg);
       border-color: #FFAAD6;
       box-shadow: 
-        0 0 35px rgba(224, 145, 250, 1), 
-        0 0 70px rgba(186, 104, 200, 0.8), 
-        inset 0 0 25px rgba(255, 170, 214, 0.7);
+        0 0 45px rgba(224, 145, 250, 1), 
+        0 0 90px rgba(186, 104, 200, 0.9), 
+        inset 0 0 30px rgba(255, 170, 214, 0.8);
     }
   }
 
@@ -1472,17 +1471,6 @@ function drawRetroStar(x, y, size) {
   ctx.quadraticCurveTo(x, y, x, y + size);
   ctx.quadraticCurveTo(x, y, x - size, y);
   ctx.quadraticCurveTo(x, y, x, y - size);
-  ctx.closePath();
-}
-
-function drawSparkleHeart(x, y, size) {
-  ctx.beginPath();
-  ctx.moveTo(x, y + size / 4);
-  ctx.quadraticCurveTo(x, y, x + size / 2, y);
-  ctx.quadraticCurveTo(x + size, y, x + size, y + size / 3);
-  ctx.quadraticCurveTo(x + size, y + (size * 2) / 3, x + size / 2, y + size);
-  ctx.quadraticCurveTo(x, y + (size * 2) / 3, x, y + size / 3);
-  ctx.quadraticCurveTo(x, y, x, y + size / 4);
   ctx.closePath();
 }
 
